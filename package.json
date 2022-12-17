@@ -1,0 +1,8 @@
+{
+  "name": "keytyper-backend",
+  "version": "1.0.0",
+  "description": "backend for keytyper",
+  "main": "index.js",
+  "author": "katsukibtw",
+  "license": "MIT"
+}
