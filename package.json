@@ -4,5 +4,20 @@
   "description": "backend for keytyper",
   "main": "index.js",
   "author": "katsukibtw",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.27.0"
+  },
+  "scripts": {
+	  "start": "nodemon index"
+  }
 }
