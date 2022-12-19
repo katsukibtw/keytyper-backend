@@ -2,7 +2,6 @@ import Stats from '../models/StatsModels.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Sequelize } from 'sequelize';
-import { underscoredIf } from 'sequelize/types/utils.js';
 
 export const addStatEnrty = async (req, res, next) => {
     const { level, wpm, errors, cr_words, time, user_id, room_user_id } = req.body;

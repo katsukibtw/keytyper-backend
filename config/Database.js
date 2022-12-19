@@ -2,7 +2,7 @@ import { Sequelize } from "sequelize";
 
 const db = new Sequelize('keytyper', 'keytyper', 'KamatQuyu--36i1', {
     host: 'localhost',
-    dialect: 'mysql'
+    dialect: 'mysql',
 })
 
 db.authenticate()

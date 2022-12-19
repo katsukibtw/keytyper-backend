@@ -1,5 +1,8 @@
 import { Sequelize } from "sequelize";
 import db from '../config/Database.js';
+import Users from "./UserModels.js";
+import RoomUsers from "./RoomUsersModel.js";
+import Levels from "./LevelsModel.js";
 
 const { DataTypes } = Sequelize;
 
@@ -10,7 +13,11 @@ const Stats = db.define('stats', {
         primaryKey: true,
     },
     level: {
-        type: DataTypes.STRING
+        type: DataTypes.INTEGER,
+        references: {
+            model: Levels,
+            key: 'id'
+        }
     },
     wpm: {
         type: DataTypes.INTEGER
@@ -24,14 +31,21 @@ const Stats = db.define('stats', {
     time: {
         type: DataTypes.INTEGER
     },
-    date: {
-        type: DataTypes.DATE
-    },
     user_id: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        references: {
+            model: Users,
+            key: 'id'
+        },
+        defaultValue: null
     },
     room_user_id: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        references: {
+            model: RoomUsers,
+            key: 'id'
+        },
+        defaultValue: null
     }
 }, {
     freezeTableName: true

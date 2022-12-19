@@ -56,11 +56,12 @@ export const Login = async (req, res) => {
             }
         });
         res.cookie('refreshToken', refreshToken, {
-            httpOnly: false,
-            sameSite: true,
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
             maxAge: 24 * 60 * 60 * 1000
         });
-        res.json({ accessToken });
+        res.json({ accessToken, refreshToken, name, userId });
     } catch (error) {
         res.status(404).json({msg: "There's no user with this login"});
     }
