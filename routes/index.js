@@ -12,7 +12,7 @@ router.post('/api/login', Login);
 router.get('/api/auth', verifyRefreshToken);
 router.get('/api/token', refreshToken);
 router.delete('/api/logout', Logout);
-// router.post('/api/stats', addStatEnrty);
-// router.get('/api/stats', getUserStats);
+router.post('/api/stats', addStatEnrty);
+router.get('/api/stats', getUserStats);
 
 export default router;
