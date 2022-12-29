@@ -16,12 +16,12 @@ export const getUsers = async (req, res) => {
 
 export const Register = async (req, res) => {
 	const { name, login, pass, confPass } = req.body;
-	const findUser = Users.findAll({
-		where: {
-			login: login
-		}
-	}).then((result) => result[0]);
-	if (findUser) return res.status(400).json({ msg: "Этот логин уже занят!" });
+	// const findUser = Users.findAll({
+		// where: {
+		//	login: login
+		// }
+	// }).then((result) => result[0]);
+	// if (findUser) return res.status(400).json({ msg: "Этот логин уже занят!" });
 	if (pass !== confPass) return res.status(400).json({ msg: "Пароли не совпадают!" });
 	const salt = await bcrypt.genSalt();
 	const hashPass = await bcrypt.hash(pass, salt);
@@ -61,20 +61,23 @@ export const Login = async (req, res) => {
 				id: userId
 			}
 		});
-		res.cookie('refreshToken', refreshToken, {
+		req.universalCookies.set('refreshToken', refreshToken, {
 			httpOnly: true,
 			sameSite: 'none',
-			secure: true,
+			secure: false,
+			
+			path: "/",
 			maxAge: 24 * 60 * 60 * 1000
 		});
 		res.json({ accessToken, refreshToken, name, userId });
 	} catch (error) {
 		res.status(404).json({ msg: "Пользователя с таким логином не существует" });
+		console.log(error.responce);
 	}
 }
 
 export const Logout = async (req, res) => {
-	const refreshToken = req.cookies.refreshToken;
+	const refreshToken = req.universalCookies.get('refreshToken');
 	if (!refreshToken) return res.sendStatus(204);
 	const user = await Users.findAll({
 		where: {
@@ -88,6 +91,6 @@ export const Logout = async (req, res) => {
 			id: userId
 		}
 	});
-	res.clearCookie('refreshToken');
+	req.universalCookies.remove('refreshToken');
 	return res.sendStatus(200);
 }

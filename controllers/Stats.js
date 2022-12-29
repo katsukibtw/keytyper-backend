@@ -2,12 +2,12 @@ import Stats from '../models/StatsModels.js';
 
 export const addStatEnrty = async (req, res) => {
 	const { level, wpm, errors, cr_words, time, user_id, room_user_id } = req.body;
-	if (wpm === 0 || wpm < 25 || errors !== 0) {
-		if ((wpm === 0 || wpm < 25) && errors === 0) {
+	if (wpm === 0 || wpm < 25 || errors > 3) {
+		if ((wpm === 0 || wpm < 25) && errors <= 3) {
 			res.json({ msg: ":( Слишком медленно. Попробуйте еще раз, но чуть быстрее.", corr: false });
-		} else if (wpm >= 25 && errors !== 0) {
+		} else if (wpm >= 25 && errors > 3) {
 			res.json({ msg: ":( Слишком неаккуратно. Попробуйте еще раз, но чуть точнее.", corr: false });
-		} else if ((wpm === 0 || wpm < 25) && errors !== 0) {
+		} else if ((wpm === 0 || wpm < 25) && errors > 3) {
 			res.json({ msg: ":( Медленно и неаккуратно! Попробуйте еще раз.", corr: false });
 		}
 	}
