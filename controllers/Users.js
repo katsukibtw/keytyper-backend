@@ -1,7 +1,6 @@
 import Users from '../models/UserModels.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Sequelize } from 'sequelize';
 
 export const getUsers = async (req, res) => {
 	try {
@@ -16,12 +15,12 @@ export const getUsers = async (req, res) => {
 
 export const Register = async (req, res) => {
 	const { name, login, pass, confPass } = req.body;
-	// const findUser = Users.findAll({
-		// where: {
-		//	login: login
-		// }
-	// }).then((result) => result[0]);
-	// if (findUser) return res.status(400).json({ msg: "Этот логин уже занят!" });
+	const ifuser = await Users.findAll({
+		where: {
+			login: login
+		}
+	}).then((result) => result[0]);
+	if (ifuser) return res.status(400).json({ msg: "Этот логин уже занят!" })
 	if (pass !== confPass) return res.status(400).json({ msg: "Пароли не совпадают!" });
 	const salt = await bcrypt.genSalt();
 	const hashPass = await bcrypt.hash(pass, salt);
@@ -65,7 +64,7 @@ export const Login = async (req, res) => {
 			httpOnly: true,
 			sameSite: 'none',
 			secure: false,
-			
+
 			path: "/",
 			maxAge: 24 * 60 * 60 * 1000
 		});
