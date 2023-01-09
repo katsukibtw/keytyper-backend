@@ -6,10 +6,9 @@ import router from "./routes/index.js";
 import { Server } from 'socket.io';
 import Rooms from './models/RoomsModels.js';
 import RoomUsers from './models/RoomUsersModel.js';
-import Stats from './models/StatsModels.js';
 
 // socket functions for rooms handling
-import { addUser, removeUser, getUser, getUserInRoom, getRoomAdmin } from './utils/roomUsers.js';
+import { addUser, removeUser, getUserInRoom, getRoomAdmin } from './utils/roomUsers.js';
 import { getRoomLevels, toggleLevel } from "./utils/roomLevelHandler.js";
 
 dotenv.config();
@@ -86,7 +85,7 @@ io.on('connection', (socket) => {
 						admin: getRoomAdmin(user.room)[0].username,
 					});
 
-					socket.emit('room created', { safe_code: code });
+					socket.emit('room created', { safe_code: code, room_id: user.room_id });
 				});
 			}
 		});
