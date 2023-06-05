@@ -1,5 +1,5 @@
 import express from "express";
-import { Register, Login, Logout } from "../controllers/Users.js";
+import { register, login, logout } from "../controllers/Users.js";
 import { verifyToken } from "../middleware/VerifyToken.js";
 import { refreshToken, verifyRefreshToken } from "../controllers/RefreshToken.js";
 import { addStatEnrty, getUserStats, getRoomStats } from "../controllers/Stats.js";
@@ -7,11 +7,11 @@ import { addStatEnrty, getUserStats, getRoomStats } from "../controllers/Stats.j
 const router = express.Router();
 
 router.get('/api/users', verifyToken);
-router.post('/api/users', Register);
-router.post('/api/login', Login);
+router.post('/api/users', register);
+router.post('/api/login', login);
 router.get('/api/auth', verifyRefreshToken);
 router.get('/api/token', refreshToken);
-router.delete('/api/logout', Logout);
+router.delete('/api/logout', logout);
 router.post('/api/stats', addStatEnrty);
 router.get('/api/stats', getUserStats);
 router.get('/api/roomstats', getRoomStats);

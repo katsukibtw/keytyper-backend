@@ -1,95 +1,111 @@
-import Users from '../models/UserModels.js';
+import prisma from '../prisma.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-export const getUsers = async (req, res) => {
-	try {
-		const users = await Users.findAll({
-			attributes: ['id', 'login', 'name']
-		});
-		res.json(users);
-	} catch (error) {
-		console.log(error);
-	}
-}
-
-export const Register = async (req, res) => {
+export const register = async (req, res) => {
+	// taking data from request
 	const { name, login, pass, confPass } = req.body;
-	const ifuser = await Users.findAll({
+
+	// check if user exists
+	const ifuser = await prisma.users.findFirst({
 		where: {
 			login: login
 		}
-	}).then((result) => result[0]);
-	if (ifuser) return res.status(400).json({ msg: "Этот логин уже занят!" })
+	})
+	if (ifuser) return res.status(400).json({ msg: "Этот логин уже занят!" });
 	if (pass !== confPass) return res.status(400).json({ msg: "Пароли не совпадают!" });
+
+	// hashing password
 	const salt = await bcrypt.genSalt();
 	const hashPass = await bcrypt.hash(pass, salt);
+
+	// creating user's record in db
 	try {
-		await Users.create({
-			login: login,
-			pass: hashPass,
-			name: name,
+		await prisma.users.create({
+			data: {
+				login: login,
+				pass: hashPass,
+				name: name
+			}
 		});
 		res.json({ msg: "success" });
-	} catch (error) {
-		console.log(error);
+	} catch (e) {
+		console.log(e);
 	}
 }
 
-export const Login = async (req, res) => {
+export const login = async (req, res) => {
+	// don't ask why it's all in try block
 	try {
-		const user = await Users.findAll({
+		// taking users info from db
+		const user = await prisma.users.findFirst({
 			where: {
 				login: req.body.login
 			}
-		}).then((res) => { return res[0] });
-		const match = await bcrypt.compare(req.body.pass, user.dataValues.pass);
-		if (!match) return res.status(400).json({ msg: "Неверный логин или пароль" });
-		const userId = user.dataValues.id;
-		const name = user.dataValues.name;
-		const login = user.dataValues.login;
-		const accessToken = jwt.sign({ userId, name, login }, process.env.ACCESS_TOKEN_SECRET, {
-			expiresIn: '15s'
-		})
-		const refreshToken = jwt.sign({ userId, name, login }, process.env.REFRESH_TOKEN_SECRET, {
-			expiresIn: '1d'
-		})
+		});
 
-		await Users.update({ refresh_token: refreshToken }, {
+		// check if entered password mathes recorded one
+		const match = bcrypt.compare(req.body.pass, user.pass);
+		if (!match) return res.status(400).json({ msg: "Неверный логин или пароль" });
+
+		const { id, name, login } = user;
+
+		// creating jwt's
+		const accessToken = jwt.sign({ id, name, login }, process.env.ACCESS_TOKEN_SECRET, {
+			expiresIn: '15s'
+		});
+		const refreshToken = jwt.sign({ id, name, login }, process.env.REFRESH_TOKEN_SECRET, {
+			expiresIn: '1d'
+		});
+
+		// update user's refresh token in db
+		await prisma.users.update({
 			where: {
-				id: userId
+				id: id
+			},
+			data: {
+				refresh_token: refreshToken
 			}
 		});
 		req.universalCookies.set('refreshToken', refreshToken, {
 			httpOnly: true,
 			sameSite: 'none',
 			secure: false,
-
-			path: "/",
+			path: '/',
 			maxAge: 24 * 60 * 60 * 1000
 		});
-		res.json({ accessToken, refreshToken, name, userId });
-	} catch (error) {
+		res.json({ accessToken, refreshToken, name, id });
+	} catch (e) {
 		res.status(404).json({ msg: "Пользователя с таким логином не существует" });
 		console.log(error.responce);
 	}
 }
 
-export const Logout = async (req, res) => {
+export const logout = async (req, res) => {
+	// check if user has refresh token in cookies
 	const refreshToken = req.universalCookies.get('refreshToken');
 	if (!refreshToken) return res.sendStatus(204);
-	const user = await Users.findAll({
+
+	// check if user has refresh token in db
+	const user = await prisma.users.findFirst({
 		where: {
 			refresh_token: refreshToken
 		}
-	}).then((res) => res);
-	if (!user[0]) return res.sendStatus(204);
-	const userId = user[0].id;
-	await Users.update({ refresh_token: null }, {
+	});
+
+	if (!user) return res.sendStatus(204);
+
+	// removing user's refresh token from db
+	await prisma.users.update({
 		where: {
-			id: userId
+			id: user.id
+		},
+		data: {
+			refresh_token: null
 		}
 	});
+
+	// remove client's cookie
 	req.universalCookies.remove('refreshToken');
 	return res.sendStatus(200);
 }

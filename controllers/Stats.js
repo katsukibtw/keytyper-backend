@@ -1,4 +1,4 @@
-import Stats from '../models/StatsModels.js';
+import prisma from '../prisma.js';
 
 export const addStatEnrty = async (req, res) => {
 	const { level, wpm, errors, cr_words, time, user_id, room_user_id, room_id } = req.body;
@@ -12,15 +12,17 @@ export const addStatEnrty = async (req, res) => {
 		}
 	}
 	try {
-		await Stats.create({
-			level: level,
-			wpm: wpm,
-			errors: errors,
-			cr_words: cr_words,
-			time: time,
-			user_id: user_id,
-			room_user_id: room_user_id,
-			room_id: room_id,
+		await prisma.stats.create({
+			data: {
+				level: level,
+				wpm: wpm,
+				errors: errors,
+				cr_words: cr_words,
+				time: time,
+				user_id: user_id,
+				room_user_id: room_user_id,
+				room_id: room_id,
+			}
 		});
 		res.json({ msg: ":) Вы молодец! Уровень успешно пройден!", corr: true });
 	} catch (error) {
@@ -31,19 +33,31 @@ export const addStatEnrty = async (req, res) => {
 export const getUserStats = async (req, res) => {
 	const userid = req.headers['user_id'];
 	if (!userid) return res.status(401).json({ msg: "there's no user" });
-	await Stats.findAll({
-		where: {
-			user_id: userid
-		}
-	}).then((result) => { return res.json(result) }).catch((error) => { return res.status(404).json({ msg: "there's no stats for this user", error: error }) });
+
+	try {
+		const stats = await prisma.stats.findMany({
+			where: {
+				user_id: Number(userid)
+			}
+		});
+		res.json(stats);
+	} catch (error) {
+		return res.status(404).json({ msg: "there's no stats for this user", error: error });
+	}
 }
 
 export const getRoomStats = async (req, res) => {
 	const roomid = req.headers['room_id'];
 	if (!roomid) return res.status(401).json({ msg: "there's no room" });
-	await Stats.findAll({
-		where: {
-			room_id: roomid
-		}
-	}).then((result) => { return res.json(result) }).catch((error) => { return res.status(404).json({ msg: "there's no stats for this room", error: error }) });
+
+	try {
+		const stats = await prisma.stats.findMany({
+			where: {
+				room_id: Number(roomid)
+			}
+		})
+		res.json(stats);
+	} catch (error) {
+		return res.status(404).json({ msg: "there's no stats for this room", error: error });
+	}
 }
